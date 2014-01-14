@@ -1,7 +1,11 @@
 package fr.inria.atlanmod.msrChallenge;
 
 import java.sql.Connection;
-import java.util.HashMap;
+
+import fr.inria.atlanmod.msrChallenge.metrics.AverageTimeBecomeCommitter;
+import fr.inria.atlanmod.msrChallenge.metrics.AverageTimeIssueMergedAndClosed;
+import fr.inria.atlanmod.msrChallenge.metrics.EmoticonsInMessages;
+import fr.inria.atlanmod.msrChallenge.metrics.Metric;
 
 /**
  * This class performs the calculations to get the values for the different
@@ -13,28 +17,38 @@ import java.util.HashMap;
 public class ProjectDiscoverer {
 	private Connection conn;
 	private int projectId;
-	private HashMap<String, Double> result = new HashMap<>();
+	private String projectName;
 
-	public ProjectDiscoverer(Connection conn, int projectId) {
+	public ProjectDiscoverer(Connection conn, int projectId, String projectName) {
 		this.conn = conn; 
 		this.projectId = projectId;
+		this.projectName = projectName;
 	}
 
-	public void discover() {
-		discoverOpenness();
-		discoverActivity();
-		discoverMood();
+	public String discoverAll() {
+		String resultOpenness = discoverOpenness();
+		String resultActivity = discoverActivity();
+		String resultMood = discoverMood();
+		return resultOpenness + "," + resultActivity + "," + resultMood;
 	}
 
-	private void discoverOpenness() {
-
+	public String discoverOpenness() {
+		Metric m1 = new AverageTimeBecomeCommitter(conn, projectId, projectName);
+		m1.calculate();
+		
+		return String.valueOf(m1.getResult());
 	}
 
-	private void discoverActivity() {
-
+	public String discoverActivity() {
+		Metric m1 = new AverageTimeIssueMergedAndClosed(conn, projectId, projectName);
+		m1.calculate();
+		
+		return String.valueOf(m1.getResult());
 	}
 	
-	private void discoverMood() {
-
+	public String discoverMood() {
+		Metric m1 = new EmoticonsInMessages(conn, projectId, projectName);
+		m1.calculate();
+		return String.valueOf(m1.getResult());
 	}
 }
