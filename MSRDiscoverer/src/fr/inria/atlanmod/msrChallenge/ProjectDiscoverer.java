@@ -2,8 +2,10 @@ package fr.inria.atlanmod.msrChallenge;
 
 import java.sql.Connection;
 
+import fr.inria.atlanmod.msrChallenge.metrics.ActiveUsers;
 import fr.inria.atlanmod.msrChallenge.metrics.AverageTimeBecomeCommitter;
 import fr.inria.atlanmod.msrChallenge.metrics.AverageTimeIssueMergedAndClosed;
+import fr.inria.atlanmod.msrChallenge.metrics.AverageTimeIssueNoMergedAndClosed;
 import fr.inria.atlanmod.msrChallenge.metrics.EmoticonsInMessages;
 import fr.inria.atlanmod.msrChallenge.metrics.Metric;
 
@@ -43,7 +45,13 @@ public class ProjectDiscoverer {
 		Metric m1 = new AverageTimeIssueMergedAndClosed(conn, projectId, projectName);
 		m1.calculate();
 		
-		return String.valueOf(m1.getResult());
+		Metric m2 = new AverageTimeIssueNoMergedAndClosed(conn, projectId, projectName);
+		m2.calculate();
+		
+		Metric m3 = new ActiveUsers(conn, projectId, projectName);
+		m3.calculate();
+		
+		return String.valueOf(m1.getResult()) + "," + String.valueOf(m2.getResult()) + "," + String.valueOf(m3.getResult());
 	}
 	
 	public String discoverMood() {

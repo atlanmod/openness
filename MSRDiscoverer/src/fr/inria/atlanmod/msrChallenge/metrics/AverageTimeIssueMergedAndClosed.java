@@ -35,7 +35,7 @@ public class AverageTimeIssueMergedAndClosed extends Metric {
 				"			where pr.pullreq_id = ipr.pull_request_id and pr.base_repo_id = p.id" +
 				"		) as t," +
 				"		pull_request_history prh" +
-				"		where prh.pull_request_id = t.pull_request_id and t.project_name = '" + projectName + "' and prh.action = 'opened'" +
+				"		where prh.pull_request_id = t.pull_request_id and t.project_id = '" + projectId + "' and prh.action = 'opened'" +
 				"	) as opened," +
 				"	(" +
 				"	select t.project_id, t.project_name, t.id_issue, t.pull_request_id, t.pull_request_user, prh.action as pull_request_action, prh.created_at as pull_request_creation" +
@@ -52,7 +52,7 @@ public class AverageTimeIssueMergedAndClosed extends Metric {
 				"			where pr.pullreq_id = ipr.pull_request_id and pr.base_repo_id = p.id" +
 				"		) as t," +
 				"		pull_request_history prh" +
-				"		where prh.pull_request_id = t.pull_request_id and t.project_name = '" + projectName + "' and prh.action = 'merged'" +
+				"		where prh.pull_request_id = t.pull_request_id and t.project_id = '" + projectId + "' and prh.action = 'merged'" +
 				"	) as merged" +
 				"	where opened.id_issue = merged.id_issue" +
 				"	) as t;";
