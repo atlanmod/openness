@@ -34,7 +34,7 @@ and issues, project activity in the last months, etc.) of open source projects.
 Who is behind this project?
 ---------------------------
 * [Javier Canovas](http://github.com/jlcanovas/ "Javier Canovas")
-* [Valerio Cosentino] (https://github.com/valeriocos/ "Valerio Cosentino")
+* [Valerio Cosentino](https://github.com/valeriocos/ "Valerio Cosentino")
 * [Jordi Cabot](http://github.com/jcabot/ "Jordi Cabot")
 
 Javier, Valerio and Jordi work in [Atlandmod](http://www.emn.fr/z-info/atlanmod), a research team of Inria.
