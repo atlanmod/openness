@@ -1,3 +1,4 @@
+/* pr_commit_issue_info_per_project collects all the information related to pull requests, issues, etc. for all the projects in the data-set */
 drop table if exists pr_commit_issue_info_per_project;
 create table pr_commit_issue_info_per_project (
 					project_id int(11),
@@ -68,12 +69,10 @@ left join
 				on pcr.pull_request_id = pr.id) as a
 			left join
 				commits c
-			on c.id = a.commit_id and c.project_id = a.project_id
-			/*where  c.created_at is not null and a.head_repo_id is not null*/) as c
+			on c.id = a.commit_id and c.project_id = a.project_id) as c
 			left join
 			pull_request_history prh
 			on c.pull_request_id = prh.pull_request_id
-			/*where (c.merged = 1 and prh.action = 'merged') or (c.merged = 0 and (prh.action is null or prh.action = 'closed'))*/
 		) as d
 		left join
 			issues i
@@ -81,10 +80,10 @@ left join
 	left join
 	issue_events ie
 	on e.issue_id = ie.issue_id) as x
-	/*where ie.action = e.pull_request_action or ie.action is null or ie.action = 'assigned' or ie.action = 'reopened'*/
 on p.id = x.project_id
 where p.forked_from is null;
 
+/* pm_and_contributors_per_project contains the project members, owners and contributors (who has write permission on the repository) for each project in the data-set */
 drop table if exists pm_and_contributors_per_project;
 create table pm_and_contributors_per_project (
 					project_id int(11),
@@ -158,6 +157,7 @@ left join
 on p.id = z.project_id
 where p.forked_from is null;
 
+/* external_contributors_per_project contains the external developers for each project in the data-set that got at least one pull request accepted. Such external developers do not write permission on the repository */
 drop table if exists external_contributors_per_project;
 create table external_contributors_per_project (
 					project_id int(11),
@@ -190,6 +190,7 @@ left join
 on p.id = x.project_id
 where p.forked_from is null;
 
+/* external_failed_contributors_per_project contains the external developers for each project in the data-set that make pull requests, but never got them accepted. Such external developers do not write permission on the repository */
 drop table if exists external_failed_contributors_per_project;
 create table external_failed_contributors_per_project (
 					project_id int(11),
@@ -225,6 +226,7 @@ left join
 on p.id = x.project_id
 where p.forked_from is null;
 
+/* first_user_activity_per_project contains the first activity of each developer (project members, collaborators, external contributors, external members) for each project in the data-set */
 drop table if exists first_user_activity_per_project;
 create table first_user_activity_per_project (
 					project_id int(11),
@@ -303,7 +305,7 @@ group by u.project_id, u.actor) as x
 on p.id = x.project_id
 where p.forked_from is null;
 
-/* OP1 community composition: project members, internal collaborators, external collaborators */
+/* Metric 1: community composition: for each project -> project members, internal collaborators, external collaborators (separated in those ones that got at least a pull request accepted and those one that did not) and external members (all the rest of developers that do not fall in the previous categories) */
 drop table if exists op1;
 create table op1 (
 					project_id int(11),
@@ -380,7 +382,7 @@ left join
 on p.id = x.project_id
 where p.forked_from is null;
 
-/* OP2 average time per project to get a pull request accepted from an external collaborator */
+/* Metric 2: for each project -> external pull requests accepted, total of pull request accepted, average time per project to get a pull request accepted from an external collaborator */
 drop table if exists op2;
 create table op2 (
 					project_id int(11),
@@ -424,7 +426,38 @@ left join
 on p.id = k.project_id
 where p.forked_from is null;
 
-/* OP3 average time per project to become a collaborator */
+/* Metric 2-pl (focused on external pull requests): for each project -> number of external pull requests accepted, number of external pull request submitted */
+drop table if exists op2_pr;
+create table op2_pr (
+					project_id int(11),
+					project_name varchar(255),
+					external_pull_requests_accepted int(11),
+					total_external_pull_requests int(11)
+				);
+insert into op2_pr (
+					project_id,
+					project_name,
+					external_pull_requests_accepted,
+					total_external_pull_requests
+				)
+select p.id as project_id, p.name as project_name, h.external_pull_requests_accepted, k.total_external_pull_requests
+from
+	projects p
+left join
+	(select t.project_id, count(distinct t.pull_request_id) as external_pull_requests_accepted
+	from pr_commit_issue_info_per_project t
+	where t.merged = 1 and t.pull_requester in (select distinct user_id from external_contributors_per_project where project_id = t.project_id)
+	group by t.project_id) as h
+on p.id = h.project_id
+left join
+	(select t.project_id, count(distinct t.pull_request_id) as total_external_pull_requests
+	from pr_commit_issue_info_per_project t
+	where t.pull_requester in (select distinct user_id from external_contributors_per_project where project_id = t.project_id)
+	group by t.project_id) as k
+on p.id = k.project_id
+where p.forked_from is null;
+
+/* Metric 3: average time per project to become collaborator */
 drop table if exists op3;
 create table op3 (
 					project_id int(11),
