@@ -9,7 +9,8 @@ line_chart = pygal.HorizontalBar(
 										x_label_rotation=30,
 										truncate_legend=65,
 										pretty_print=True,
-										width=2000,
+										legend_at_bottom=True,
+										width=1500,
 										height=2000,
 										value_font_size=26,
 										legend_font_size=24,
@@ -109,7 +110,7 @@ line_chart.x_labels = ['akka',
 'zipkin',
 'Bukkit',
 'Overall statistics']
-line_chart.add('External pull request accepted',
+line_chart.add('Average number of days to become collaborator',
 [
 205.36,
 None,
