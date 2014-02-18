@@ -389,28 +389,35 @@ create table op2 (
 					project_name varchar(255),
 					external_pull_requests_accepted int(11),
 					total_pull_requests_accepted int(11),
-					avg_days_to_external_contributions numeric(10,6)
+					avg_days_to_evaluate_external_contributions numeric(10,6)
 				);
 insert into op2 (
 					project_id,
 					project_name,
 					external_pull_requests_accepted,
 					total_pull_requests_accepted,
-					avg_days_to_external_contributions
+					avg_days_to_evaluate_external_contributions
 				)
-select p.id as project_id, p.name as project_name, h.external_pull_requests_accepted, k.total_pull_requests_accepted, x.avg_days_to_external_contributions
+select p.id as project_id, p.name as project_name, ifnull(h.external_pull_requests_accepted,0), ifnull(k.total_pull_requests_accepted,0), ifnull(x.avg_days_to_evaluate_external_contributions,0)
 from
 	projects p
 left join
-	(select c.project_id, c.project_name, avg(b.min_time_pull_request_accepted) as avg_days_to_external_contributions
-	from
-		external_contributors_per_project c,
-		(select a.project_id, a.user_id, min(timestampdiff(DAY, a.first_activity, b.pull_request_action_time)) as min_time_pull_request_accepted
-		from first_user_activity_per_project a, pr_commit_issue_info_per_project b
-		where a.project_id = b.project_id and a.user_id = b.pull_requester and b.merged = 1/*and b.issue_action = 'merged'*/
-		group by a.project_id, a.user_id) as b
-	where c.project_id = b.project_id and b.min_time_pull_request_accepted > 0
-	group by b.project_id) as x
+	(select t.*, avg(timestampdiff(HOUR, t.issue_creation, t.issue_action_time)/24) as avg_days_to_evaluate_external_contributions
+		from pr_commit_issue_info_per_project t
+		where (t.merged = 1 and (t.pull_request_action is null or t.issue_action is null) /* some pull requests are merged, but the corresponding event is not consistent */
+				or
+			(t.pull_request_action = 'closed' and t.issue_action = 'closed')) 
+																							and t.pull_requester in (
+																														select distinct user_id
+																														from external_contributors_per_project
+																														where project_id = t.project_id
+																														union
+																														select distinct user_id
+																														from external_failed_contributors_per_project
+																														where project_id = t.project_id
+																													)
+	group by t.project_id
+	) as x
 on p.id = x.project_id
 left join
 	(select t.project_id, count(distinct t.pull_request_id) as external_pull_requests_accepted
@@ -440,7 +447,7 @@ insert into op2_pr (
 					external_pull_requests_accepted,
 					total_external_pull_requests
 				)
-select p.id as project_id, p.name as project_name, h.external_pull_requests_accepted, k.total_external_pull_requests
+select p.id as project_id, p.name as project_name, ifnull(h.external_pull_requests_accepted,0), ifnull(k.total_external_pull_requests,0)
 from
 	projects p
 left join
@@ -462,18 +469,20 @@ drop table if exists op3;
 create table op3 (
 					project_id int(11),
 					project_name varchar(255),
+					number_of_users_turned_collaborators numeric(11),
 					avg_days_to_become_collaborator numeric(10,6)
 				);
 insert into op3 (
 					project_id,
 					project_name,
+					number_of_users_turned_collaborators,
 					avg_days_to_become_collaborator
 				)
-select p.id as project_id, p.name as project_name, w.avg_days_to_become_collaborator
+select p.id as project_id, p.name as project_name, ifnull(w.number_of_users_turned_collaborators,0), ifnull(w.avg_days_to_become_collaborator,0)
 from
 	projects p
 left join
-	(select o.project_id, o.project_name, avg(o.days) as avg_days_to_become_collaborator
+	(select o.project_id, o.project_name, count(o.user_id) as number_of_users_turned_collaborators, avg(o.days) as avg_days_to_become_collaborator
 	from
 		(select h.project_id, h.project_name, h.user_id, timestampdiff(DAY, j.first_activity, h.first_activity_as_internal_contributors) as days
 		from
@@ -505,11 +514,82 @@ left join
 					where b.intra_branch = 1 and b.issue_action in ('closed', 'reopened', 'merged')) as x
 				group by x.project_id, x.user_id) as q
 			on p.id = q.project_id
-			where p.forked_from is null) as h
+			where p.forked_from is null and q.user_id in (select s.user_id from pm_and_contributors_per_project s where s.project_id = q.project_id and s.type_user in ('internal_contributors'))
+			) as h
 		join
-			/* first activity in the project */
-			(select p.project_id, p.user_id, p.first_activity
-			from first_user_activity_per_project p) as j
+			/* first no-collaborator activity in the project */
+			(select i.project_id, i.project_name, i.user_id, i.first_activity
+			from
+				(select u.project_id, u.project_name, u.actor as user_id, min(u.time_event) as first_activity
+				from (
+					/* the actor of the issue event, where the event is not closed or merged*/
+					select p.id as project_id, p.name as project_name, ie.actor_id as actor, ie.created_at as time_event
+					from issues i, issue_events ie, projects p
+					where i.id = ie.issue_id and i.repo_id = p.id and ie.action not in ('closed', 'merged')
+					union
+					/* the author of an issue comment */
+					select p.id as project_id, p.name as project_name, ic.user_id as actor, ic.created_at as time_event
+					from issue_comments ic, issues i, projects p
+					where i.id = ic.issue_id and i.repo_id = p.id and ic.user_id
+					union
+					/* the author of a commit comment */
+					select p.id as project_id, p.name as project_name, cc.user_id as actor, cc.created_at as time_event
+					from commit_comments cc, commits c, projects p
+					where cc.commit_id = c.id and c.project_id = p.id
+					union
+					/* the author of a commit comment - this is needed because some results are lost otherwise */
+					select p.id as project_id, p.name as project_name, cc.user_id as actor, cc.created_at as time_event
+					from commit_comments cc, project_commits pc, projects p
+					where pc.project_id = p.id and cc.commit_id = pc.commit_id
+					union
+					/* the author of a pull request comment */
+					select p.id as project_id, p.name as project_name, prc.user_id as actor, prc.created_at as time_event
+					from pull_requests pr, pull_request_comments prc, projects p
+					where pr.id = prc.pull_request_id and pr.base_repo_id = p.id
+					union
+					/* the author of a commit - in GitHub the author does not need to have write access on the repository */
+					select p.id as project_id, p.name as project_name, c.author_id as actor, c.created_at as time_event
+					from commits c, projects p
+					where c.project_id = p.id and ((p.forked_from is null and c.author_id <> c.committer_id) or (p.forked_from is not null))
+					union
+					/* the author of a commit - in GitHub the author does not need to have write access on the repository - this is needed because some results are lost otherwise*/
+					select p.id as project_id, p.name as project_name, c.author_id as actor, c.created_at as time_event
+					from project_commits pc, commits c, projects p
+					where pc.project_id = p.id and pc.commit_id = c.id and ((p.forked_from is null and c.author_id <> c.committer_id) or (p.forked_from is not null))
+					union
+					/* the committer of a commit - he cannot be the committer in a no-forked repo */
+					select p.id as project_id, p.name as project_name, c.committer_id as actor, c.created_at as time_event
+					from commits c, projects p
+					where c.project_id = p.id and p.forked_from is not null
+					union
+					/* the committer of a commit - he cannot be the committer in a no-forked repo - this is needed because some results are lost otherwise */
+					select p.id as project_id, p.name as project_name, c.committer_id as actor, c.created_at as time_event
+					from project_commits pc, commits c, projects p
+					where pc.project_id = p.id and pc.commit_id = c.id and p.forked_from is not null
+					union
+					/* a pull requester - note that the pull request cannot be an intra branch one */
+					select p.id as project_id, p.name as project_name, pr.user_id as actor, prh.created_at as time_event
+					from pull_requests pr, pull_request_history prh, projects p
+					where pr.id = prh.pull_request_id and pr.base_repo_id = p.id and pr.intra_branch = 0
+					union
+					/* the reporter of an issue */
+					select p.id as project_id, p.name as project_name, i.reporter_id as actor, i.created_at as time_event
+					from issues i, projects p
+					where i.repo_id = p.id
+					union
+					/* the assignee of an issue */
+					select p.id as project_id, p.name as project_name, i.assignee_id as actor, i.created_at as time_event
+					from issues i, projects p
+					where i.repo_id = p.id
+					union
+					/* the owner of a forked project */
+					select p1.id as project_id, p1.name as project_name, p2.owner_id as actor, p2.created_at as time_event
+					from projects p1
+					left join projects p2
+					on p1.id = p2.forked_from
+					where p1.forked_from is null
+					) as u
+		group by u.project_id, u.actor) as i) as j
 		on h.project_id = j.project_id and h.user_id = j.user_id) as o
 	where o.days > 0
 	group by o.project_id) as w
