@@ -469,22 +469,24 @@ drop table if exists op3;
 create table op3 (
 					project_id int(11),
 					project_name varchar(255),
+					number_of_collaborators numeric(11),
 					number_of_users_turned_collaborators numeric(11),
 					avg_days_to_become_collaborator numeric(10,6)
 				);
 insert into op3 (
 					project_id,
 					project_name,
+					number_of_collaborators,
 					number_of_users_turned_collaborators,
 					avg_days_to_become_collaborator
 				)
-select p.id as project_id, p.name as project_name, ifnull(w.number_of_users_turned_collaborators,0), ifnull(w.avg_days_to_become_collaborator,0)
+select p.id as project_id, p.name as project_name, ifnull(w.number_of_collaborators, 0), ifnull(w.number_of_users_turned_collaborators,0), ifnull(w.avg_days_to_become_collaborator,0)
 from
 	projects p
 left join
-	(select o.project_id, o.project_name, count(o.user_id) as number_of_users_turned_collaborators, avg(o.days) as avg_days_to_become_collaborator
+	(select o.project_id, o.project_name, o.collaborators as number_of_collaborators, count(o.user_id) as number_of_users_turned_collaborators, avg(o.days) as avg_days_to_become_collaborator
 	from
-		(select h.project_id, h.project_name, h.user_id, timestampdiff(DAY, j.first_activity, h.first_activity_as_internal_contributors) as days
+		(select h.project_id, h.project_name, z.collaborators, h.user_id, timestampdiff(DAY, j.first_activity, h.first_activity_as_internal_contributors) as days
 		from
 			(select p.name as project_name, q.*
 			from
@@ -590,7 +592,14 @@ left join
 					where p1.forked_from is null
 					) as u
 		group by u.project_id, u.actor) as i) as j
-		on h.project_id = j.project_id and h.user_id = j.user_id) as o
+		on h.project_id = j.project_id and h.user_id = j.user_id
+		join
+		(select c.project_id, count(c.user_id) as collaborators
+		from pm_and_contributors_per_project c
+		where c.type_user in ('internal_contributors')
+		group by c.project_id) as z
+		on h.project_id = z.project_id
+		) as o
 	where o.days > 0
 	group by o.project_id) as w
 on p.id = w.project_id
