@@ -92,6 +92,7 @@ create table pm_and_contributors_per_project (
 					user_name varchar(255),
 					user_login varchar(255),
 					user_mail varchar(255),
+					first_action timestamp,
 					type_user varchar(255)
 				);
 insert into pm_and_contributors_per_project (
@@ -101,59 +102,85 @@ insert into pm_and_contributors_per_project (
 					user_name,
 					user_login,
 					user_mail,
+					first_action,
 					type_user
 				)
 select z.*
 from projects p
 left join
-	(select distinct p.id as project_id, p.name as project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, 'project_member' as type_user
+	(select distinct p.id as project_id, p.name as project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, pm.created_at as first_time, 'project_member' as type_user
 	from project_members pm, users u, projects p
 	where pm.repo_id = p.id and u.id = pm.user_id
 	union
-	select p.id as project_id, p.name as project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, 'project_owner' as type_user
+	select p.id as project_id, p.name as project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, p.created_at as first_time, 'project_owner' as type_user
 	from users u, projects p
 	where u.id = p.owner_id
 	union
-	select distinct x.project_id, x.project_name, x.user_id, x.user_name, x.user_login, x.user_mail, x.type_user
+	select distinct x.project_id, x.project_name, x.user_id, x.user_name, x.user_login, x.user_mail, min(x.first_time) as first_time, x.type_user
 	from
-		(select t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, 'internal_contributors' as type_user
+		(select t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, t.pull_request_action_time as first_time, 'internal_contributor' as type_user
 		from users u,
 			pr_commit_issue_info_per_project t
 		where u.id = t.pull_requester and t.intra_branch = 1 and t.pull_requester not in (select pm.user_id 
 																						from project_members pm
-																						where pm.repo_id = t.project_id)
+																						where pm.repo_id = t.project_id
+																						union
+																						select p.owner_id
+																						from projects p
+																						where p.id = t.project_id)
 		union
-		select t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, 'internal_contributors' as type_user
+		select t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, t.commit_time as first_time, 'internal_contributor' as type_user
 		from users u,
 			pr_commit_issue_info_per_project t
 		where u.id = t.committer_id and t.intra_branch = 1 and t.committer_id not in (select pm.user_id 
 																					from project_members pm
-																					where pm.repo_id = t.project_id)
+																					where pm.repo_id = t.project_id
+																					union
+																					select p.owner_id
+																					from projects p
+																					where p.id = t.project_id)
 		union
-		select distinct t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, 'internal_contributors' as type_user
+		select distinct t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, t.issue_action_time as first_time, 'internal_contributor' as type_user
 		from users u,
 			pr_commit_issue_info_per_project t
-		where t.project_id = 1 and u.id = t.issue_event_actor and t.merged = 0 and t.intra_branch = 0 and t.issue_action in ('closed') and t.issue_event_actor not in (select pm.user_id 
-																					from project_members pm
-																					where pm.repo_id = t.project_id)
+		where u.id = t.issue_event_actor and t.merged = 0 and t.intra_branch = 0 and t.issue_action in ('closed') and t.issue_event_actor not in (select pm.user_id 
+																																										from project_members pm
+																																										where pm.repo_id = t.project_id
+																																										union
+																																										select p.owner_id
+																																										from projects p
+																																										where p.id = t.project_id)
 		union
-		select distinct t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, 'internal_contributors' as type_user
+		select distinct t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, t.issue_action_time as first_time, 'internal_contributor' as type_user
 		from users u,
 			pr_commit_issue_info_per_project t
 		where u.id = t.issue_event_actor and t.merged = 1 and t.intra_branch = 0 and t.issue_action in ('merged') and t.issue_event_actor not in (select pm.user_id 
-																					from project_members pm
-																					where pm.repo_id = t.project_id)
+																																					from project_members pm
+																																					where pm.repo_id = t.project_id
+																																					union
+																																					select p.owner_id
+																																					from projects p
+																																					where p.id = t.project_id)
 		union
-		select distinct t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, 'internal_contributors' as type_user
+		select distinct t.project_id, t.project_name, u.id as user_id, u.name as user_name, u.login as user_login, u.email as user_mail, t.issue_action_time as first_time, 'internal_contributor' as type_user
 		from users u,
 			pr_commit_issue_info_per_project t
 		where u.id = t.issue_event_actor and t.intra_branch = 1 and t.issue_action in ('closed', 'reopened', 'merged') and t.issue_event_actor not in (select pm.user_id 
-																					from project_members pm
-																					where pm.repo_id = t.project_id)
+																																						from project_members pm
+																																						where pm.repo_id = t.project_id
+																																						union
+																																						select p.owner_id
+																																						from projects p
+																																						where p.id = t.project_id)
 		) as x
 		where x.user_id not in (select pm.user_id 
 								from project_members pm
-								where pm.repo_id = x.project_id)) as z
+								where pm.repo_id = x.project_id
+								union
+								select p.owner_id
+								from projects p
+								where p.id = x.project_id)
+		group by x.project_id, x.user_id) as z
 on p.id = z.project_id
 where p.forked_from is null;
 
@@ -311,28 +338,43 @@ create table op1 (
 					project_id int(11),
 					project_name varchar(255),
 					owner_and_pms numeric(10,6),
-					internal_collaborators numeric(10,6),
-					external_win_collaborators numeric(10,6),
-					external_fail_collaborators numeric(10,6),
-					external_users numeric(10,6)
+					collaborators numeric(10,6),
+					external_win_contributors numeric(10,6),
+					external_fail_contributors numeric(10,6),
+					external_users numeric(10,6),
+					number_of_owner_and_pms numeric(11),
+					number_of_collaborators numeric(11),
+					number_of_external_win_contributors numeric(11),
+					number_of_external_fail_contributors numeric(11),
+					number_of_external_users numeric(11)
 				);
 insert into op1 (
 					project_id,
 					project_name,
 					owner_and_pms,
-					internal_collaborators,
-					external_win_collaborators,
-					external_fail_collaborators,
-					external_users
+					collaborators,
+					external_win_contributors,
+					external_fail_contributors,
+					external_users,
+					number_of_owner_and_pms,
+					number_of_collaborators,
+					number_of_external_win_contributors,
+					number_of_external_fail_contributors,
+					number_of_external_users
 				)
 select 
 		p.id as project_id,
 		p.name as project_name,
-		((x.pm_and_owner * 100)/x.all_users) as project_members,
-		((x.internal_collaborators * 100)/x.all_users) as internal_collaborators,
-		((x.external_win_collaborators * 100)/x.all_users) as external_win_collaborators,
-		((x.external_fail_collaborators * 100)/x.all_users) as external_fail_collaborators,
-		(((x.all_users - ( x.pm_and_owner + x.internal_collaborators + x.external_win_collaborators + x.external_fail_collaborators)) * 100)/x.all_users) as external_users
+		ifnull(((x.pm_and_owner * 100)/x.all_users),0) as project_members,
+		ifnull(((x.internal_collaborators * 100)/x.all_users),0) as internal_collaborators,
+		ifnull(((x.external_win_collaborators * 100)/x.all_users),0) as external_win_collaborators,
+		ifnull(((x.external_fail_collaborators * 100)/x.all_users),0) as external_fail_collaborators,
+		ifnull((((x.all_users - ( x.pm_and_owner + x.internal_collaborators + x.external_win_collaborators + x.external_fail_collaborators)) * 100)/x.all_users),0) as external_users,
+		ifnull(pm_and_owner,0) as number_of_project_members,
+		ifnull(internal_collaborators,0) as number_of_collaborators,
+		ifnull(external_win_collaborators,0) as number_of_win_external_collaborators,
+		ifnull(external_fail_collaborators,0) as number_of_fail_external_collaborators,
+		ifnull(all_users,0) as number_of_users
 from
 	projects p
 left join
@@ -360,13 +402,13 @@ left join
 			left join
 			(select a.project_id, ifnull(count(distinct a.user_id), 0) as pm_and_owner
 			from pm_and_contributors_per_project a
-			where a.type_user in ('owner', 'project_member')
+			where a.type_user in ('project_owner', 'project_member')
 			group by a.project_id) as z
 			on t.project_id = z.project_id
 			left join
 			(select a.project_id, ifnull(count(distinct a.user_id), 0) as internal_collaborators
 			from pm_and_contributors_per_project a
-			where a.type_user = 'internal_contributors'
+			where a.type_user = 'internal_contributor'
 			group by a.project_id) as e
 			on t.project_id = e.project_id
 			left join
@@ -480,43 +522,32 @@ insert into op3 (
 					number_of_users_turned_collaborators,
 					avg_days_to_become_collaborator
 				)
-select p.id as project_id, p.name as project_name, ifnull(w.number_of_collaborators, 0), ifnull(w.number_of_users_turned_collaborators,0), ifnull(w.avg_days_to_become_collaborator,0)
+select p.id as project_id, p.name as project_name, ifnull(z.number_of_collaborators, 0), ifnull(w.number_of_users_turned_collaborators,0), ifnull(w.avg_days_to_become_collaborator,0)
 from
 	projects p
 left join
-	(select o.project_id, o.project_name, o.collaborators as number_of_collaborators, count(o.user_id) as number_of_users_turned_collaborators, avg(o.days) as avg_days_to_become_collaborator
+(select c.project_id, count(c.user_id) as number_of_collaborators
+from pm_and_contributors_per_project c
+where c.type_user in ('internal_contributor')
+group by c.project_id) as z
+on p.id = z.project_id
+left join
+	(select o.project_id, o.project_name, count(o.user_id) as number_of_users_turned_collaborators, avg(o.days) as avg_days_to_become_collaborator
 	from
-		(select h.project_id, h.project_name, z.collaborators, h.user_id, timestampdiff(DAY, j.first_activity, h.first_activity_as_internal_contributors) as days
+		(select h.project_id, h.project_name, h.user_id, timestampdiff(DAY, j.first_activity, h.first_activity_as_internal_contributors) as days
 		from
 			(select p.name as project_name, q.*
 			from
 				projects p
-			left join
+			join
 				/* first activity as internal contributors */
-				(select x.project_id, x.user_id, min(x.action_time) as first_activity_as_internal_contributors
-				from (
-					select b.project_id, b.pull_requester as user_id, b.pull_request_action_time as action_time
-					from pr_commit_issue_info_per_project b
-					where b.intra_branch = 1
-					union	
-					select b.project_id, b.committer_id as user_id, b.commit_time as action_time
-					from pr_commit_issue_info_per_project b
-					where b.intra_branch = 1
-					union
-					select b.project_id, b.issue_event_actor as user_id, b.issue_action_time as action_time
-					from pr_commit_issue_info_per_project b
-					where b.merged = 0 and b.intra_branch = 0 and b.issue_action in ('closed')
-					union
-					select b.project_id, b.issue_event_actor as user_id, b.issue_action_time as action_time
-					from pr_commit_issue_info_per_project b
-					where b.merged = 1 and b.intra_branch = 0 and b.issue_action in ('merged')
-					union
-					select b.project_id, b.issue_event_actor as user_id, b.issue_action_time as action_time
-					from pr_commit_issue_info_per_project b
-					where b.intra_branch = 1 and b.issue_action in ('closed', 'reopened', 'merged')) as x
-				group by x.project_id, x.user_id) as q
+				(
+				select p.project_id, p.user_id, p.first_action as first_activity_as_internal_contributors
+				from pm_and_contributors_per_project p
+				where p.type_user in ('internal_contributor')
+				) as q
 			on p.id = q.project_id
-			where p.forked_from is null and q.user_id in (select s.user_id from pm_and_contributors_per_project s where s.project_id = q.project_id and s.type_user in ('internal_contributors'))
+			where p.forked_from is null
 			) as h
 		join
 			/* first no-collaborator activity in the project */
@@ -593,14 +624,9 @@ left join
 					) as u
 		group by u.project_id, u.actor) as i) as j
 		on h.project_id = j.project_id and h.user_id = j.user_id
-		join
-		(select c.project_id, count(c.user_id) as collaborators
-		from pm_and_contributors_per_project c
-		where c.type_user in ('internal_contributors')
-		group by c.project_id) as z
-		on h.project_id = z.project_id
 		) as o
 	where o.days > 0
 	group by o.project_id) as w
 on p.id = w.project_id
 where p.forked_from is null;
+/* finish */
