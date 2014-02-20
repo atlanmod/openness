@@ -1,7 +1,7 @@
 Analyzing openness of GitHub projects
 ===============
 
-Visit the [http://atlanmod.github.io/openness] to see the results.
+Visit the [website](http://atlanmod.github.io/openness) to see the results.
 
 What is this project about?
 ---------------------------
@@ -19,7 +19,7 @@ These metrics are adapted to GitHub projects, which is arguably the largest and 
 What can you find in this repository?
 -------------------------------------
 
-* metrics/msr-metrics.sql. It contains an SQL script implementing the metrics previously presented. The metrics are applied on a subset of GitHub projects, downloadable [http://ghtorrent.org/msr14.html]
+* metrics/msr-metrics.sql. It contains an SQL script implementing the metrics previously presented. The metrics are applied on a subset of GitHub projects, downloadable [here](http://ghtorrent.org/msr14.html)
 * gh-pages. It contains the web-page of the study, with charts and statistics for each GitHub project analyzed
 
 
