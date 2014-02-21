@@ -446,9 +446,9 @@ from
 left join
 	(select t.*, avg(timestampdiff(HOUR, t.issue_creation, t.issue_action_time)/24) as avg_days_to_evaluate_external_contributions
 		from pr_commit_issue_info_per_project t
-		where (t.merged = 1 and (t.pull_request_action is null or t.issue_action is null) /* some pull requests are merged, but the corresponding event is not consistent */
+		where ((t.merged = 1 and t.pull_request_action is null and t.issue_action is null) /* some pull requests are merged, but the corresponding event is not consistent */
 				or
-			(t.pull_request_action = 'closed' and t.issue_action = 'closed')) 
+			(t.pull_request_action = 'closed' or t.issue_action = 'closed')) 
 																							and t.pull_requester in (
 																														select distinct user_id
 																														from external_contributors_per_project
