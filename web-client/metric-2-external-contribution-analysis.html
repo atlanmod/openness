@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Metric 2: external contribution analysis</title>   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-theme.css" rel="stylesheet" media="screen">
+    <link href="css/style.css" rel="stylesheet" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:700' rel='stylesheet' type='text/css'>
+  </head>
+  <!-- The embedded style is for fixing spaces with navbar -->
+  <body style="padding-top: 50px;">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="collapse navbar-collapse navbar-ex1-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="contact.html">Contact us</a></li>
+		  <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Metrics<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="metric-1-community-composition.html">Community composition</a></li>
+				<li><a href="metric-3-time-to-become-collaborator.html">Time to Become Collaborator</a></li>
+              </ul>
+          </li>
+        </ul>
+        <ul class="pull-right">
+          <li>
+            <button type="button" class="btn btn-default btn-sm" onClick="location.href='https://github.com/atlanmod/openness'">
+              <img src="img/glyphicons_social_21_github.png"> View on Github
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    </nav>
+	
+  <div class="container example">
+	  <h1>External Contribution Analysis</h1>
+	  <div class="row">
+		  <div class="col-md-9">
+		  <h3>
+			How relevant are the non-project member contributions?<br/>
+		  </h3>
+		  <p>
+		  In GitHub the main external contributions are pull requests.
+		  Pull requests can be provided by any GitHub user and they can be accepted or rejected only by project members or collaborators (according to our community classification).
+		  Thus, we are interested in analysing the number of pull requests from external contributors and how many of them have been accepted and rejected.
+		  Furthermore, we are also interested in studying the average time an external pull request takes to be closed (e.e., accepted or rejected).
+		  </p>
+		  <p>
+		  This metric may indicate how project members take into consideration external contributions as well as it may serve to encourage (or discourage) external contributors to participate in the project.
+		  Below, we present the results of this metric for the provided dataset.
+		  </p>
+		  </div> <!-- col-md-9 -->
+	  
+		  <div class="col-md-3">
+			<img style="margin-top: 25px;" class="img-thumbnail" src="img/logo-msr.png" alt="Openness of GitHub projects">
+		  </div> <!-- /.col-md-3 -->
+	  </div> <!-- row -->
+		
+	  <div class="row">
+		<h3 align="center">External pull requests accepted and rejected (#)</h3>
+		<div class="col-md-12">
+			<figure>
+			  <embed type="image/svg+xml" src="img/m2_chart_numbers_pr.svg" />
+			</figure>
+		<div/>
+	  </div> <!-- row -->
+	  <div class="row">
+		<h3 align="center">External pull requests accepted and rejected (%)</h3>
+		<div class="col-md-12">
+			<figure>
+			  <embed type="image/svg+xml" src="img/m2_chart_percentage_pr.svg" />
+			</figure>
+		<div/>
+	  </div> <!-- row -->
+	  <div class="row">
+		<h3 align="center">Average time to evaluate an external pull request (days)</h3>
+		<div class="col-md-12">
+			<figure>
+			  <embed type="image/svg+xml" src="img/m2_chart_average.svg" />
+			</figure>
+		<div/>
+	  </div> <!-- row -->
+  </div> <!-- container -->
+
+  </body>
+</html>

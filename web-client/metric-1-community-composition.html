@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Metric 1: Community Composition</title>   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-theme.css" rel="stylesheet" media="screen">
+    <link href="css/style.css" rel="stylesheet" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:700' rel='stylesheet' type='text/css'>
+  </head>
+  <!-- The embedded style is for fixing spaces with navbar -->
+  <body style="padding-top: 50px;">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="collapse navbar-collapse navbar-ex1-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="contact.html">Contact us</a></li>
+		  <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Metrics<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="metric-2-external-contribution-analysis.html">External Contribution Analysis</a></li>
+				<li><a href="metric-3-time-to-become-collaborator.html">Time to Become Collaborator</a></li>
+              </ul>
+          </li>		  
+        </ul>
+        <ul class="pull-right">
+          <li>
+            <button type="button" class="btn btn-default btn-sm" onClick="location.href='https://github.com/atlanmod/openness'">
+              <img src="img/glyphicons_social_21_github.png"> View on Github
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    </nav>
+
+  <div class="container example">
+	  <h1>Community Composition</h1>	
+	  <div class="row">
+		  <div class="col-md-9">	  
+		  <h3>
+		  How it is composed in terms of project and non-project members?
+		  </h3>
+		  
+		  <p>
+		  We have identified the following four types of users:
+		  <ul>
+			<li><code>Project members</code>(including the project owner), who are officially part of the project, thus being able to manage any of its features (e.g. issue management, merging pull request, etc.).</li>
+			<li><code>Collaborators</code>, who are granted the permission to manage the project, but are not part of the project members group.</li>
+			<li><code>External contributors</code>, who perform pull requests, but do not have the permission to accept or close them.</li>
+			<li><code>External users</code>, everyone else that contributes to the project, but is not included in the previous groups. They mainly participate in the discussion of issues, commits, etc.</li>
+		  </ul>
+		  </p>
+		  
+		  <p>
+			The analysis of the community composition may help to understand how the responsibilities are distributed in the community but, more importantly, how non-project members are involved.
+			Below, we present the results of the community composition analysis for the 91 GitHub original projects.
+		  </p>
+		  </div> <!-- col-md-9 -->
+	  
+		  <div class="col-md-3">
+			<img style="margin-top: 25px;" class="img-thumbnail" src="img/logo-msr.png" alt="Openness of GitHub projects">
+		  </div> <!-- /.col-md-3 -->
+	  </div> <!-- row -->
+  
+	  <div class="row">
+		<div class="col-md-12">
+			<h3 align="center">Community composition (%)</h3>
+			<figure>
+			  <embed type="image/svg+xml" src="img/m1_chart_percentage.svg" />
+			</figure>
+		<div/>
+	  </div> <!-- row -->
+	  <div class="row">
+		<h3 align="center">Community composition (#)</h3>
+		<div class="col-md-12">
+			<figure>
+			  <embed type="image/svg+xml" src="img/m1_chart_numbers.svg" />
+			</figure>
+		<div/>
+	  </div> <!-- row -->
+  
+  </div> <!-- container -->
+
+  </body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Metric 3: Time to Become Collaborator</title>   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/bootstrap.css" rel="stylesheet" media="screen">
+    <link href="css/bootstrap-theme.css" rel="stylesheet" media="screen">
+    <link href="css/style.css" rel="stylesheet" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:700' rel='stylesheet' type='text/css'>
+  </head>
+  <!-- The embedded style is for fixing spaces with navbar -->
+  <body style="padding-top: 50px;">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="js/jquery-1.10.2.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <div class="collapse navbar-collapse navbar-ex1-collapse">
+        <ul class="nav navbar-nav">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="contact.html">Contact us</a></li>
+		  <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown">Metrics<b class="caret"></b></a>
+              <ul class="dropdown-menu">
+                <li><a href="metric-1-community-composition.html">Community Composition</a></li>
+				<li><a href="metric-2-external-contribution-analysis.html">External Contribution Analysis</a></li>
+              </ul>
+          </li>
+        </ul>
+        <ul class="pull-right">
+          <li>
+            <button type="button" class="btn btn-default btn-sm" onClick="location.href='https://github.com/atlanmod/openness'">
+              <img src="img/glyphicons_social_21_github.png"> View on Github
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    </nav>
+	
+  <div class="container example">
+	  <h1>Time to Become Collaborator</h1>	
+	  <div class="row">
+		  
+		  <div class="col-md-9">
+		  <h3>
+			How long does it take to become collaborator?
+		  </h3>
+		  <p>
+		  The engagement of contributors in open source projects is crucial for them to be alive. External contributors are usually encouraged by means of rewards to foster their participation and involvement.
+		  </p>
+		  <p>
+		  In GitHub, project members and project owners have the permissions to turn external contributors into collaborators (according to the project policy), which can be seen as a kind of reward for their involvement in the project.
+		  Therefore, the study of how long it takes to become a collaborator may help to better assess the openness level in GitHub projects. Note that this metric cannot be calculated for those projects where nobody is promoted to collaborator. Below, we present the results of this metric for the provided dataset.		  
+		  </p>
+		  </div> <!-- col-md-9 -->
+	  
+		  <div class="col-md-3">
+			<img style="margin-top: 25px;" class="img-thumbnail" src="img/logo-msr.png" alt="Openness of GitHub projects">
+		  </div> <!-- /.col-md-3 -->
+	  </div> <!-- row -->
+	
+	  <div class="row">
+		<div class="col-md-12">
+			<h3 align="center">Average time to become collaborator (days)</h3>
+			<figure>
+			  <embed type="image/svg+xml" src="img/m3_chart_average.svg" />
+			</figure>
+		<div/>
+	  </div> <!-- row -->
+  
+  </div> <!-- container -->
+
+  </body>
+</html>
