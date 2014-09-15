@@ -1,1 +1,0 @@
-In order to run the Python programs in this folder you have to install Pygal. It can be downloaded here: http://pygal.org/download/

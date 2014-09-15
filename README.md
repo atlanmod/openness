@@ -20,8 +20,7 @@ What can you find in this repository?
 -------------------------------------
 
 * metrics/msr-metrics.sql. It contains an SQL script implementing the metrics previously presented. The metrics are applied on a subset of GitHub projects, downloadable [here](http://ghtorrent.org/msr14.html)
-* gh-pages. It contains the web-page of the study, with charts and statistics for each GitHub project analyzed
-
+* gh-pages branch. It contains the web-page of the study, with charts and statistics for each GitHub project analyzed
 
 What is coming next?
 --------------------
@@ -34,3 +33,5 @@ Who is behind this project?
 * [Jordi Cabot](http://github.com/jcabot/ "Jordi Cabot")
 
 Javier, Valerio and Jordi work in [Atlandmod](http://www.emn.fr/z-info/atlanmod), a research team of Inria.
+
+This webpage is licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0 "CC BY 3.0").
