@@ -32,6 +32,6 @@ Who is behind this project?
 * [Valerio Cosentino](https://github.com/valeriocos/ "Valerio Cosentino")
 * [Jordi Cabot](http://github.com/jcabot/ "Jordi Cabot")
 
-Javier, Valerio and Jordi work in [Atlandmod](http://www.emn.fr/z-info/atlanmod), a research team of Inria.
+Javier, Valerio and Jordi work in [Atlanmod](http://www.emn.fr/z-info/atlanmod), a research team of Inria.
 
 This webpage is licensed under [CC BY 3.0](https://creativecommons.org/licenses/by/3.0 "CC BY 3.0").
